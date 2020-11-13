@@ -14,6 +14,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 import java.util.zip.GZIPInputStream;
