@@ -16,6 +16,7 @@ import com.facebook.react.bridge.WritableNativeArray;
 import java.io.ByteArrayOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+import java.util.zip.GZIPInputStream;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class RNReactNativeZlibModule extends ReactContextBaseJavaModule {
@@ -97,6 +98,40 @@ public class RNReactNativeZlibModule extends ReactContextBaseJavaModule {
             inflater.end();
 
             promise.resolve(Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP));
+        } catch (final Throwable ex) {
+            promise.reject(ER_FAILURE, ex);
+        }
+    }
+
+    @ReactMethod
+    public void inflateGzip(@NonNull final ReadableArray data, @NonNull final Promise promise) {
+        final WritableArray results = new WritableNativeArray();
+        final byte[] buffer = new byte[1024];
+
+        try {
+            final byte[] inputBytes = getByteArrayFromInput(data);
+            final InputStream inputStream = new ByteArrayInputStream(inputBytes);
+            final GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream);
+
+            try
+            {
+                int count = gzipInputStream.read(buffer, 0, 1024);
+                while (count != -1) {
+                    
+                    for (int i = 0; i < count; i++) {
+                        results.pushInt(buffer[i]);
+                    }
+                    
+                    count = gzipInputStream.read(buffer, 0, 1024);
+                }
+
+                promise.resolve(results);
+            }
+            finally
+            {
+                gzipInputStream.close();
+                inputStream.close();
+            }
         } catch (final Throwable ex) {
             promise.reject(ER_FAILURE, ex);
         }
